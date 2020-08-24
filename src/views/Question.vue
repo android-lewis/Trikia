@@ -1,0 +1,21 @@
+<template>
+  <div>
+    <h1>Score: {{getScore}}</h1>
+    <Question />
+    <Answers />
+  </div>
+</template>
+
+<script>
+import { mapGetters } from 'vuex';
+import Question from '../components/Question';
+import Answers from '../components/Answers';
+
+export default {
+  components: {
+    Question,
+    Answers,
+  },
+  computed: mapGetters(['getScore']),
+};
+</script>
