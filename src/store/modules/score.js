@@ -18,7 +18,7 @@ const actions = {};
 // Mutations
 const mutations = {
   increment(state) {
-    state.count++;
+    state.count += 1;
   },
 };
 

@@ -1,6 +1,7 @@
 <template>
     <div class="container">
-        <div class="answer" v-for="(answers, index) in getAnswers[getCount].answers" :key="index" @click="answerCheck({event: $event, id: getAnswers[getCount].id})">
+        <div class="answer" v-for="(answers, index) in getAnswers[getCount].answers"
+        :key="index" @click="answerCheck({event: $event, id: getAnswers[getCount].id})">
             <h1>{{decodeURIComponent(answers)}}</h1>
         </div>
     </div>

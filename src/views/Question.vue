@@ -8,8 +8,8 @@
 
 <script>
 import { mapGetters } from 'vuex';
-import Question from '../components/Question';
-import Answers from '../components/Answers';
+import Question from '../components/Question.vue';
+import Answers from '../components/Answers.vue';
 
 export default {
   components: {

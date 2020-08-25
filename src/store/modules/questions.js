@@ -20,11 +20,11 @@ const state = {
 };
 
 const getters = {
-  getDiff: (state) => state.difficulty,
-  getQuestions: (state) => state.questions,
-  getAnswers: (state) => state.answer_list,
-  getCategories: (state) => state.category,
-  getOptions: (state) => state.options,
+  getDiff(state) { return state.difficulty; },
+  getQuestions(state) { return state.questions; },
+  getAnswers(state) { return state.answer_list; },
+  getCategories(state) { return state.category; },
+  getOptions(state) { return state.options; },
 };
 
 const actions = {
@@ -34,6 +34,7 @@ const actions = {
     commit('resetState');
     commit('setQuestions', data.results);
     commit('setAnswers', data.results);
+    commit('shuffleArray');
   },
   async fetchCategory({ commit }) {
     const { data } = await axios.get('https://opentdb.com/api_category.php', { crossdomain: true });
@@ -43,10 +44,11 @@ const actions = {
     commit('setOptions', e);
   },
   answerCheck({ state, rootState }, payload) {
-    if (encodeURIComponent(payload.event.target.innerHTML) == state.correct_answer[payload.id].correct_answer) {
+    if (encodeURIComponent(payload.event.target.innerHTML)
+    === state.correct_answer[payload.id].correct_answer) {
       console.log('correct');
-      rootState.score.score++;
-      rootState.score.count++;
+      rootState.score.score += 1;
+      rootState.score.count += 1;
     } else {
       console.log(`incorrect: ${payload.event.target.innerHTML} : ${payload.id}`);
     }
@@ -56,56 +58,49 @@ const actions = {
 
 const mutations = {
   resetState: (state) => {
-    state.questions = [],
-    state.question_id = [],
-    state.id = 0,
-    state.answer_list = [],
+    state.questions = [];
+    state.question_id = [];
+    state.id = 0;
+    state.answer_list = [];
     state.correct_answer = [];
   },
-  setQuestions: (state, questions) => (
-
+  setQuestions: (state, questions) => {
     questions.forEach((q) => {
       state.question_id.push(state.id);
       state.questions.push(q.question);
-      state.id++;
-    })
-  ),
-  setAnswers: (state, answers) => (
-    state.id = 0,
+      state.id += 1;
+    });
+  },
+  setAnswers: (state, answers) => {
+    state.id = 0;
     answers.forEach((a) => {
       const tempAnswer = [];
       state.correct_answer.push({
         id: state.question_id[state.id],
         correct_answer: a.correct_answer,
       });
-      // console.log(state.correct_answer);
       tempAnswer.push(a.correct_answer);
-
-      console.log(tempAnswer);
-      // Shuffling array
-
-      /*
-            } */
-
-      // console.log(tempAnswer);
       state.answer_list.push({
         id: state.question_id[state.id],
         answers: tempAnswer.concat(a.incorrect_answers),
       });
-      state.id++;
-    })
-  ),
+      state.id += 1;
+    });
+  },
   shuffleArray: (state) => {
-    for (let i = tempAnswer.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      const temp = tempAnswer[i];
-      tempAnswer[i] = tempAnswer[j];
-      tempAnswer[j] = temp;
+    for (let index = 0; index < state.answer_list.length; index += 1) {
+      const tempAnswer = state.answer_list[index];
+      for (let i = tempAnswer.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        const temp = tempAnswer[i];
+        tempAnswer[i] = tempAnswer[j];
+        tempAnswer[j] = temp;
+      }
     }
   },
-  setCategory: (state, category) => (
-    state.category = category
-  ),
+  setCategory: (state, category) => {
+    state.category = category;
+  },
   setOptions(state, options) {
     state.options.questionLimit = options.questionLimit;
     state.options.diff = options.difficulty;
