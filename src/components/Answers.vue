@@ -1,6 +1,6 @@
 <template>
-    <div class="container">
-        <div class="answer" v-for="(answers, index) in getAnswers[getCount].answers"
+    <div class="container" v-if="getAnswers.length > 0">
+        <div class="answer"  v-for="(answers, index) in getAnswers[getCount].answers"
         :key="index" @click="answerCheck({event: $event, id: getAnswers[getCount].id})">
             <h1>{{decodeURIComponent(answers)}}</h1>
         </div>
@@ -13,15 +13,12 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
   name: 'Answers',
   methods: {
-    ...mapActions(['getTrivia', 'answerCheck']),
-    randomList(rand) {
-      return console.log(rand.sort(() => 0.5 - Math.random()));
-    },
+    ...mapActions({ answerCheck: 'questions/answerCheck' }),
   },
-  computed: mapGetters(['getAnswers', 'getCount']),
-  async created() {
-    await this.getTrivia();
-  },
+  computed: mapGetters({
+    getAnswers: 'questions/getAnswers',
+    getCount: 'score/getCount',
+  }),
 };
 </script>
 
@@ -62,4 +59,4 @@ export default {
         background-color: #067847;
     }
 
-    </style>
+</style>

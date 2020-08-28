@@ -1,11 +1,13 @@
 import axios from 'axios';
 
 const state = {
+  data: {},
   difficulty: {
-    HARD: 'hard',
-    MEDIUM: 'medium',
     EASY: 'easy',
+    MEDIUM: 'medium',
+    HARD: 'hard',
   },
+  status: 'WAIT',
   id: 0,
   question_id: [],
   questions: [],
@@ -13,9 +15,9 @@ const state = {
   correct_answer: [],
   category: {},
   options: {
-    questionLimit: 0,
-    diff: 'easy',
-    category: 1,
+    questionLimit: Number,
+    diff: String,
+    category: Number,
   },
 };
 
@@ -25,35 +27,48 @@ const getters = {
   getAnswers(state) { return state.answer_list; },
   getCategories(state) { return state.category; },
   getOptions(state) { return state.options; },
+  getLimit(state) { return state.options.questionLimit; },
+  getFetchStatus(state) { return state.status; },
 };
 
 const actions = {
   async getTrivia({ commit, state }) {
-    const { data } = await axios.get(`https://opentdb.com/api.php?amount=${state.options.questionLimit}&category=${state.options.category}&difficulty=${state.options.diff}&type=multiple&encode=url3986`, { crossdomain: true });
-    // console.log(`https://opentdb.com/api.php?amount=${state.options.questionLimit}&category=${state.options.category}&difficulty=${state.options.diff}&type=multiple&encode=url3986`);
-    commit('resetState');
-    commit('setQuestions', data.results);
-    commit('setAnswers', data.results);
-    commit('shuffleArray');
+    const api = `https://opentdb.com/api.php?amount=${state.options.questionLimit}&category=${state.options.category}&difficulty=${state.options.diff}&type=multiple&encode=url3986`;
+    await axios.get(api)
+      .then(({ data }) => {
+        commit('alterStatus', 'WAIT');
+        commit('score/resetScore', null, { root: true });
+        commit('resetState');
+        commit('setQuestions', data.results);
+        commit('setAnswers', data.results);
+        commit('shuffleArray');
+      });
   },
   async fetchCategory({ commit }) {
     const { data } = await axios.get('https://opentdb.com/api_category.php', { crossdomain: true });
     commit('setCategory', data.trivia_categories);
   },
-  Options({ commit }, e) {
-    commit('setOptions', e);
+  optionsCategory({ commit }, e) {
+    commit('setSelectedCategory', e);
+  },
+  optionsDiff({ commit }, e) {
+    commit('setDiff', e);
+  },
+  optionsLimit({ commit }, e) {
+    commit('setQuestionLimit', e);
   },
   answerCheck({ state, rootState }, payload) {
     if (encodeURIComponent(payload.event.target.innerHTML)
     === state.correct_answer[payload.id].correct_answer) {
-      console.log('correct');
       rootState.score.score += 1;
       rootState.score.count += 1;
     } else {
       console.log(`incorrect: ${payload.event.target.innerHTML} : ${payload.id}`);
     }
   },
-
+  setSuccess({ commit }) {
+    commit('alterStatus', 'SUCCESS');
+  },
 };
 
 const mutations = {
@@ -63,6 +78,9 @@ const mutations = {
     state.id = 0;
     state.answer_list = [];
     state.correct_answer = [];
+  },
+  setData: (state, data) => {
+    state.data = data;
   },
   setQuestions: (state, questions) => {
     questions.forEach((q) => {
@@ -89,26 +107,34 @@ const mutations = {
   },
   shuffleArray: (state) => {
     for (let index = 0; index < state.answer_list.length; index += 1) {
-      const tempAnswer = state.answer_list[index];
-      for (let i = tempAnswer.length - 1; i > 0; i -= 1) {
+      console.log(state.answer_list[index]);
+      for (let i = state.answer_list[index].answers.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
-        const temp = tempAnswer[i];
-        tempAnswer[i] = tempAnswer[j];
-        tempAnswer[j] = temp;
+        const temp = state.answer_list[index].answers[i];
+        state.answer_list[index].answers[i] = state.answer_list[index].answers[j];
+        state.answer_list[index].answers[j] = temp;
       }
     }
   },
   setCategory: (state, category) => {
     state.category = category;
   },
-  setOptions(state, options) {
-    state.options.questionLimit = options.questionLimit;
-    state.options.diff = options.difficulty;
-    state.options.category = options.category;
+  setSelectedCategory: (state, category) => {
+    state.options.category = category;
+  },
+  setQuestionLimit: (state, limit) => {
+    state.options.questionLimit = limit;
+  },
+  setDiff: (state, diff) => {
+    state.options.diff = diff;
+  },
+  alterStatus: (state, e) => {
+    state.status = e;
   },
 };
 
 export default {
+  namespaced: true,
   state,
   getters,
   actions,

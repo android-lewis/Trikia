@@ -1,21 +1,18 @@
 <template>
-    <div class="container">
+    <div class="container" v-if="getQuestions">
         <h1 class="question">{{decodeURIComponent(getQuestions[getCount])}}</h1>
     </div>
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex';
+import { mapGetters } from 'vuex';
 
 export default {
   name: 'Question',
-  methods: {
-    ...mapActions(['getTrivia']),
-  },
-  computed: mapGetters(['getQuestions', 'getCount']),
-  created() {
-    this.getTrivia();
-  },
+  computed: mapGetters({
+    getQuestions: 'questions/getQuestions',
+    getCount: 'score/getCount',
+  }),
 };
 </script>
 
