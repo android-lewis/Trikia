@@ -1,7 +1,9 @@
 <template>
     <div class="container" v-if="getAnswers.length > 0">
         <div class="answer"  v-for="(answers, index) in getAnswers[getCount].answers"
-        :key="index" @click="answerCheck({event: $event, id: getAnswers[getCount].id})">
+        :key="index"
+        :class="isAnswerCorrect ? 'correct' : ''"
+        @click="answerCheck({event: $event, id: getAnswers[getCount].id})">
             <h1>{{decodeURIComponent(answers)}}</h1>
         </div>
     </div>
@@ -12,12 +14,18 @@ import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'Answers',
+  data() {
+    return {
+      isCorrect: false,
+    };
+  },
   methods: {
     ...mapActions({ answerCheck: 'questions/answerCheck' }),
   },
   computed: mapGetters({
     getAnswers: 'questions/getAnswers',
     getCount: 'score/getCount',
+    isAnswerCorrect: 'questions/getAnswerIsCorrect',
   }),
 };
 </script>

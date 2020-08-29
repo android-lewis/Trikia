@@ -13,6 +13,7 @@ const state = {
   questions: [],
   answer_list: [],
   correct_answer: [],
+  isAnswerCorrect: false,
   category: {},
   options: {
     questionLimit: Number,
@@ -29,6 +30,7 @@ const getters = {
   getOptions(state) { return state.options; },
   getLimit(state) { return state.options.questionLimit; },
   getFetchStatus(state) { return state.status; },
+  getAnswerIsCorrect(state) { return state.isAnswerCorrect; },
 };
 
 const actions = {
@@ -62,9 +64,9 @@ const actions = {
     === state.correct_answer[payload.id].correct_answer) {
       rootState.score.score += 1;
       rootState.score.count += 1;
-    } else {
-      console.log(`incorrect: ${payload.event.target.innerHTML} : ${payload.id}`);
+      state.isAnswerCorrect = true;
     }
+    rootState.score.count += 1;
   },
   setSuccess({ commit }) {
     commit('alterStatus', 'SUCCESS');
@@ -79,35 +81,35 @@ const mutations = {
     state.answer_list = [];
     state.correct_answer = [];
   },
-  setData: (state, data) => {
-    state.data = data;
-  },
   setQuestions: (state, questions) => {
-    questions.forEach((q) => {
-      state.question_id.push(state.id);
-      state.questions.push(q.question);
-      state.id += 1;
-    });
+    if (questions.length > 0 && questions.length !== undefined) {
+      questions.forEach((q) => {
+        state.question_id.push(state.id);
+        state.questions.push(q.question);
+        state.id += 1;
+      });
+    }
   },
   setAnswers: (state, answers) => {
     state.id = 0;
-    answers.forEach((a) => {
-      const tempAnswer = [];
-      state.correct_answer.push({
-        id: state.question_id[state.id],
-        correct_answer: a.correct_answer,
+    if (answers.length > 0 && answers.length !== undefined) {
+      answers.forEach((a) => {
+        const tempAnswer = [];
+        state.correct_answer.push({
+          id: state.question_id[state.id],
+          correct_answer: a.correct_answer,
+        });
+        tempAnswer.push(a.correct_answer);
+        state.answer_list.push({
+          id: state.question_id[state.id],
+          answers: tempAnswer.concat(a.incorrect_answers),
+        });
+        state.id += 1;
       });
-      tempAnswer.push(a.correct_answer);
-      state.answer_list.push({
-        id: state.question_id[state.id],
-        answers: tempAnswer.concat(a.incorrect_answers),
-      });
-      state.id += 1;
-    });
+    }
   },
   shuffleArray: (state) => {
     for (let index = 0; index < state.answer_list.length; index += 1) {
-      console.log(state.answer_list[index]);
       for (let i = state.answer_list[index].answers.length - 1; i > 0; i -= 1) {
         const j = Math.floor(Math.random() * (i + 1));
         const temp = state.answer_list[index].answers[i];
